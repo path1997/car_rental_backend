@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.rzeznicki.wypozyczalnia_aut_backend.exception.ServiceException;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.UserEntity;
 import pl.rzeznicki.wypozyczalnia_aut_backend.repository.UserRepository;
 
@@ -16,7 +17,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     UserEntity user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + email));
+            .orElseThrow(() -> new ServiceException(500, "User Not Found with email: " + email));
 
     return UserDetailsImpl.build(user);
   }

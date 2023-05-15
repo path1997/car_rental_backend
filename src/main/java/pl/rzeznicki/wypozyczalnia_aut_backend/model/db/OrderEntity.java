@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Entity
 @Getter
 @Setter
@@ -25,5 +27,8 @@ public class OrderEntity {
     @ManyToOne
     @JoinColumn(name = "car_id")
     private CarEntity carEntity;
+    private boolean active;
+    private Date dateFrom;
+    private Date dateTo;
 
 }

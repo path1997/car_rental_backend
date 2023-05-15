@@ -25,6 +25,7 @@ public class CarEntity {
     private Byte[] photo1;
     private Byte[] photo2;
     private Byte[] photo3;
+    boolean available;
 
     @JsonIgnore
     @ManyToOne

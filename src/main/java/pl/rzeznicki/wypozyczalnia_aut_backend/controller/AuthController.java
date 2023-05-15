@@ -32,11 +32,23 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         authService.registerUser(signUpRequest, "ROLE_USER");
-        return ResponseEntity.ok().body("User registered successfully!");
+        return ResponseEntity.ok().body("");
+    }
+
+    @PostMapping("/signupModerator")
+    public ResponseEntity<?> registerModerator(@Valid @RequestBody SignupRequest signUpRequest) {
+        authService.registerUser(signUpRequest, "ROLE_MODERATOR");
+        return ResponseEntity.ok().body("");
+    }
+
+    @PostMapping("/signupAdmin")
+    public ResponseEntity<?> registerAdmin(@Valid @RequestBody SignupRequest signUpRequest) {
+        authService.registerUser(signUpRequest, "ROLE_ADMIN");
+        return ResponseEntity.ok().body("");
     }
 
     @PostMapping("/signout")
     public ResponseEntity<?> logoutUser() {
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, authService.logout()).body("You've been signed out!");
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, authService.logout()).body("");
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.rzeznicki.wypozyczalnia_aut_backend.exception.ServiceException;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.AuthenticateUser;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.RoleEntity;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.UserEntity;
@@ -54,7 +55,7 @@ public class AuthService {
 
     public void registerUser(SignupRequest signUpRequest, String role) {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            //TODO throw new Exception("12");
+            throw new ServiceException(500, "User already exist");
         }
         UserEntity user = new UserEntity(signUpRequest.getFirstName(), signUpRequest.getSecondName(), signUpRequest.getPhone(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
         RoleEntity userRole = roleRepository.findByName(role)

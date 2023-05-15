@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.catalina.User;
 
 import java.util.List;
 
@@ -21,6 +22,8 @@ public class RentalEntity {
     private String phone;
     private String email;
     private Byte[] photo;
+    @OneToMany(mappedBy = "rentalEntity")
+    private List<UserEntity> moderators;
 
     @OneToMany(mappedBy = "rentalEntity")
     private List<CarEntity> carEntity;

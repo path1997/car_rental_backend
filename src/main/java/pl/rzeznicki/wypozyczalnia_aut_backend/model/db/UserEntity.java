@@ -26,6 +26,11 @@ public class UserEntity {
     private String email;
     private String password;
 
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "rental_id")
+    private RentalEntity rental;
+
     @OneToMany(mappedBy = "userEntity")
     private List<OrderEntity> orderEntities;
 
