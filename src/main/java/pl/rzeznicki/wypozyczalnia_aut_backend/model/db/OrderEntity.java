@@ -2,16 +2,15 @@ package pl.rzeznicki.wypozyczalnia_aut_backend.model.db;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Date;
 
+@Data
+@Builder
 @Entity
-@Getter
-@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "order")
 public class OrderEntity {
     @Id

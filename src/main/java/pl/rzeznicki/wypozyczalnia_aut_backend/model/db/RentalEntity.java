@@ -1,17 +1,16 @@
 package pl.rzeznicki.wypozyczalnia_aut_backend.model.db;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.catalina.User;
 
 import java.util.List;
 
+@Data
+@Builder
 @Entity
-@Getter
-@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "rental")
 public class RentalEntity {
     @Id
