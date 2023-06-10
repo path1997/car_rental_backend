@@ -1,8 +1,8 @@
 package pl.rzeznicki.wypozyczalnia_aut_backend.service;
 
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import pl.rzeznicki.wypozyczalnia_aut_backend.exception.ServiceException;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.CarEntity;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.OrderEntity;
@@ -10,9 +10,12 @@ import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.RentalEntity;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.UserEntity;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.requestBody.CreateCar;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.requestBody.CreateRental;
+import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.Rental;
+import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.User;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.UserOrder;
 import pl.rzeznicki.wypozyczalnia_aut_backend.repository.*;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -63,20 +66,25 @@ public class MainService {
         orderRepository.save(order);
     }
 
-    public List<RentalEntity> getRentals() {
-        return rentalRepository.findAll();
+    public List<Rental> getRentals() {
+        return rentalRepository.findAll().stream().map(Rental::new).toList();
     }
 
-    public void createRental(CreateRental createRental) {
-        RentalEntity rental = RentalEntity.builder()
-                .city(createRental.getCity())
-                .address(createRental.getAddress())
-                .phone(createRental.getPhone())
-                .email(createRental.getEmail())
-                .photo(createRental.getPhoto())
-                .build();
+    public void createRental(String city, String address, String phone, String email, MultipartFile photo) {
+        RentalEntity rental = null;
+        try {
+            rental = RentalEntity.builder()
+                    .city(city)
+                    .address(address)
+                    .phone(phone)
+                    .email(email)
+                    .photo(photo.getBytes())
+                    .build();
+        } catch (IOException e) {
+            throw new ServiceException(500, "Error when convert photo to byte array");
+        }
 
-        List<UserEntity> userEntities = new ArrayList<>();
+        /*List<UserEntity> userEntities = new ArrayList<>();
         List<CarEntity> carEntities = new ArrayList<>();
 
         for(Long id : createRental.getCarsId()){
@@ -94,7 +102,7 @@ public class MainService {
             userEntities.add(userEntity.get());
         }
         rental.setCarEntity(carEntities);
-        rental.setModerators(userEntities);
+        rental.setModerators(userEntities);*/
         rentalRepository.save(rental);
     }
 
@@ -106,7 +114,7 @@ public class MainService {
         }
         RentalEntity rentalEntity = rental.get();
         rentalEntity.setModerators(Collections.emptyList());
-        rentalEntity.setCarEntity(Collections.emptyList());
+        rentalEntity.setCars(Collections.emptyList());
         rentalRepository.save(rentalEntity);
         rentalRepository.delete(rentalEntity);
     }
@@ -134,7 +142,7 @@ public class MainService {
             }
             userEntities.add(userEntity.get());
         }
-        rental.setCarEntity(carEntities);
+        rental.setCars(carEntities);
         rental.setModerators(userEntities);
 
         rental.setCity(createRental.getCity());
@@ -145,18 +153,28 @@ public class MainService {
         rentalRepository.save(rental);
     }
 
-    public void createCar(CreateCar createCar) {
-        CarEntity carEntity = CarEntity.builder()
-                .mark(createCar.getMark())
-                .model(createCar.getModel())
-                .color(createCar.getColor())
-                .year(createCar.getYear())
-                .price(createCar.getPrice())
-                .photo1(createCar.getPhoto1())
-                .photo2(createCar.getPhoto2())
-                .photo3(createCar.getPhoto3())
-                .build();
-        carRepository.save(carEntity);
+    public void createCar(String mark, String model, String color, int year, int price, long rentalId, MultipartFile photo1, MultipartFile photo2, MultipartFile photo3) {
+        try {
+            Optional<RentalEntity> rental = rentalRepository.findById(rentalId);
+            RentalEntity rentalEntity = null;
+            if(rental.isPresent()){
+                rentalEntity = rental.get();
+            }
+            CarEntity carEntity = CarEntity.builder()
+                    .mark(mark)
+                    .model(model)
+                    .color(color)
+                    .year(year)
+                    .price(price)
+                    .photo1(photo1.getBytes())
+                    .photo2(photo2.getBytes())
+                    .photo3(photo3.getBytes())
+                    .rentalEntity(rentalEntity)
+                    .build();
+            carRepository.save(carEntity);
+        } catch (IOException e) {
+            throw new ServiceException(500, "Error when convert photo to byte array");
+        }
     }
 
     public void modifyCar(Long id, CreateCar createCar){
@@ -180,4 +198,7 @@ public class MainService {
         carRepository.deleteById(id);
     }
 
+    public List<User> getModeratorsForRental() {
+        return userRepository.getModeratorsForRental().stream().map(User::new).toList();
+    }
 }

@@ -24,13 +24,13 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser( @RequestBody LoginRequest loginRequest) {
         AuthenticateUser authenticateUser = authService.authenticateUser(loginRequest);
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, authenticateUser.getJwt()).body(authenticateUser.getUserInfoResponse());
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<?> registerUser( @RequestBody SignupRequest signUpRequest) {
         authService.registerUser(signUpRequest, "ROLE_USER");
         return ResponseEntity.ok().body("");
     }
@@ -49,6 +49,7 @@ public class AuthController {
 
     @PostMapping("/signout")
     public ResponseEntity<?> logoutUser() {
+        System.out.println("jestem tu");
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, authService.logout()).body("");
     }
 }

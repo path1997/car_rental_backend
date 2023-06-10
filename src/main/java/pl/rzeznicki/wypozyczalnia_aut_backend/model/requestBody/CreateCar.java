@@ -9,7 +9,7 @@ public class CreateCar {
     private String color;
     private int year;
     private int price;
-    private Byte[] photo1;
-    private Byte[] photo2;
-    private Byte[] photo3;
+    private byte[] photo1;
+    private byte[] photo2;
+    private byte[] photo3;
 }

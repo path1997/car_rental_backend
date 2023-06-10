@@ -13,7 +13,7 @@ public class CreateRental {
     private String address;
     private String phone;
     private String email;
-    private Byte[] photo;
+    private byte[] photo;
     private List<Long> moderatorsId;
     private List<Long> carsId;
 }

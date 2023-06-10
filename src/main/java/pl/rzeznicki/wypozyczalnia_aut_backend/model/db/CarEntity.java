@@ -21,9 +21,12 @@ public class CarEntity {
     private String color;
     private int year;
     private int price;
-    private Byte[] photo1;
-    private Byte[] photo2;
-    private Byte[] photo3;
+    @Column(name = "photo1", columnDefinition = "LONGBLOB")
+    private byte[] photo1;
+    @Column(name = "photo2", columnDefinition = "LONGBLOB")
+    private byte[] photo2;
+    @Column(name = "photo3", columnDefinition = "LONGBLOB")
+    private byte[] photo3;
     boolean available;
 
     @JsonIgnore

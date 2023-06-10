@@ -1,5 +1,6 @@
 package pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.CarEntity;
@@ -9,6 +10,7 @@ import java.util.Date;
 
 @Data
 @Builder
+@AllArgsConstructor
 public class UserOrder {
     private CarEntity carEntity;
     private boolean active;

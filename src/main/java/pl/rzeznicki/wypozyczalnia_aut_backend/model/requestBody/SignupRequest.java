@@ -12,23 +12,17 @@ import java.util.Set;
 @Setter
 public class SignupRequest {
     @NotBlank
-    @Size(min = 3, max = 20)
     private String firstName;
 
     @NotBlank
-    @Size(min = 3, max = 20)
     private String secondName;
  
     @NotBlank
-    @Size(max = 50)
-    @Email
     private String email;
 
     @NotBlank
-    @Size(min = 9, max = 9)
     private String phone;
     
     @NotBlank
-    @Size(min = 6, max = 40)
     private String password;
 }

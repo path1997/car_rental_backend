@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.CarEntity;
-import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.RentalEntity;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.requestBody.CreateCar;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.requestBody.CreateRental;
+import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.Rental;
+import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.User;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.UserOrder;
 import pl.rzeznicki.wypozyczalnia_aut_backend.service.MainService;
 
@@ -15,7 +17,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600, allowCredentials = "true")
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/api/main")
 @AllArgsConstructor
 public class MainController {
     private MainService mainService;
@@ -23,6 +25,11 @@ public class MainController {
     @GetMapping("/home")
     public ResponseEntity<List<CarEntity>> getHomePage(){
         return ResponseEntity.ok(mainService.getHomePage());
+    }
+
+    @GetMapping("/user/getModerators")
+    public ResponseEntity<List<User>> getModeratorsForRental(){
+        return ResponseEntity.ok(mainService.getModeratorsForRental());
     }
 
     @GetMapping("/user/history")
@@ -43,13 +50,19 @@ public class MainController {
     }
 
     @GetMapping("/rental/getRentals")
-    public ResponseEntity<List<RentalEntity>> getRentals(){
+    public ResponseEntity<List<Rental>> getRentals(){
         return ResponseEntity.ok(mainService.getRentals());
     }
 
     @PostMapping("/rental/create")
-    public void createRental(@RequestBody CreateRental createRental){
-        mainService.createRental(createRental);
+    public void createRental(
+            @RequestParam(value = "city") String city,
+            @RequestParam(value = "address") String address,
+            @RequestParam(value = "phone") String phone,
+            @RequestParam(value = "email") String email,
+            @RequestParam(value = "photo") MultipartFile photo
+    ){
+        mainService.createRental(city, address, phone, email, photo);
     }
 
     @DeleteMapping("/rental/delete/{id}")
@@ -63,8 +76,16 @@ public class MainController {
     }
 
     @PostMapping("/car/create")
-    public void createCar(@RequestBody CreateCar createCar){
-        mainService.createCar(createCar);
+    public void createCar(@RequestParam(value = "mark") String mark,
+                          @RequestParam(value = "model") String model,
+                          @RequestParam(value = "color") String color,
+                          @RequestParam(value = "year") int year,
+                          @RequestParam(value = "price") int price,
+                          @RequestParam(value = "rentalId") long rentalId,
+                          @RequestParam(value = "photo1") MultipartFile photo1,
+                          @RequestParam(value = "photo2") MultipartFile photo2,
+                          @RequestParam(value = "photo3") MultipartFile photo3){
+        mainService.createCar(mark, model, color, year, price, rentalId, photo1, photo2, photo3);
     }
 
     @GetMapping("/all")

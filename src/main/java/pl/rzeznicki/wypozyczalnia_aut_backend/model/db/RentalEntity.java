@@ -2,7 +2,6 @@ package pl.rzeznicki.wypozyczalnia_aut_backend.model.db;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.apache.catalina.User;
 
 import java.util.List;
 
@@ -20,10 +19,11 @@ public class RentalEntity {
     private String address;
     private String phone;
     private String email;
-    private Byte[] photo;
-    @OneToMany(mappedBy = "rentalEntity")
+    @Column(name = "photo", columnDefinition = "LONGBLOB")
+    private byte[] photo;
+    @OneToMany(mappedBy = "rental")
     private List<UserEntity> moderators;
 
     @OneToMany(mappedBy = "rentalEntity")
-    private List<CarEntity> carEntity;
+    private List<CarEntity> cars;
 }
