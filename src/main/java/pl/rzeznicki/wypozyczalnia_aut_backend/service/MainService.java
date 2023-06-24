@@ -1,6 +1,8 @@
 package pl.rzeznicki.wypozyczalnia_aut_backend.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pl.rzeznicki.wypozyczalnia_aut_backend.exception.ServiceException;
@@ -10,10 +12,9 @@ import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.RentalEntity;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.db.UserEntity;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.requestBody.CreateCar;
 import pl.rzeznicki.wypozyczalnia_aut_backend.model.requestBody.CreateRental;
-import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.Rental;
-import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.User;
-import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.UserOrder;
+import pl.rzeznicki.wypozyczalnia_aut_backend.model.responseBody.*;
 import pl.rzeznicki.wypozyczalnia_aut_backend.repository.*;
+import pl.rzeznicki.wypozyczalnia_aut_backend.security.model.UserDetailsImpl;
 
 import java.io.IOException;
 import java.util.*;
@@ -28,21 +29,23 @@ public class MainService {
     private UserRepository userRepository;
 
 
-    public List<CarEntity> getHomePage() {
-        return carRepository.findAllByAvailableTrue();
+    public List<Car> getHomePage() {
+        return carRepository.findAllByAvailableTrue().stream().map(Car::new).toList();
     }
 
-    public List<UserOrder> getUserOrders(Long id) {
-        return orderRepository.getUserOrders(id).stream().map(UserOrder::new).toList();
+    public List<Order> getUserOrders() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication();
+        return orderRepository.getUserOrders(userDetails.getId()).stream().map(Order::new).toList();
     }
 
-    public void rentCar(Long userId, Long carId) {
-        Optional<UserEntity> userEntity = userRepository.findById(userId);
+    public void rentCar(Long carId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication();
+        Optional<UserEntity> userEntity = userRepository.findById(userDetails.getId());
         Optional<CarEntity> carEntity = carRepository.findById(carId);
-        if(userEntity.isEmpty()){
+        if (userEntity.isEmpty()) {
             throw new ServiceException(500, "User not found");
         }
-        if(carEntity.isEmpty()){
+        if (carEntity.isEmpty()) {
             throw new ServiceException(500, "Car not found");
         }
         OrderEntity orderEntity = OrderEntity.builder()
@@ -57,7 +60,7 @@ public class MainService {
 
     public void returnCar(Long orderId) {
         Optional<OrderEntity> orderEntity = orderRepository.findById(orderId);
-        if(orderEntity.isEmpty()){
+        if (orderEntity.isEmpty()) {
             throw new ServiceException(500, "Order not found");
         }
         OrderEntity order = orderEntity.get();
@@ -109,7 +112,7 @@ public class MainService {
 
     public void deleteRental(Long id) {
         Optional<RentalEntity> rental = rentalRepository.findById(id);
-        if(rental.isEmpty()){
+        if (rental.isEmpty()) {
             throw new ServiceException(500, "Rental not found");
         }
         RentalEntity rentalEntity = rental.get();
@@ -121,23 +124,23 @@ public class MainService {
 
     public void modifyRental(Long rentalId, CreateRental createRental) {
         Optional<RentalEntity> rentalEntityOptional = rentalRepository.findById(rentalId);
-        if(rentalEntityOptional.isEmpty()){
+        if (rentalEntityOptional.isEmpty()) {
             throw new ServiceException(500, "Rental not found");
         }
         RentalEntity rental = rentalEntityOptional.get();
         List<UserEntity> userEntities = new ArrayList<>();
         List<CarEntity> carEntities = new ArrayList<>();
 
-        for(Long id : createRental.getCarsId()){
+        for (Long id : createRental.getCarsId()) {
             Optional<CarEntity> carEntity = carRepository.findById(id);
-            if(carEntity.isEmpty()){
+            if (carEntity.isEmpty()) {
                 continue;
             }
             carEntities.add(carEntity.get());
         }
-        for(Long id : createRental.getModeratorsId()){
+        for (Long id : createRental.getModeratorsId()) {
             Optional<UserEntity> userEntity = userRepository.findById(id);
-            if(userEntity.isEmpty()){
+            if (userEntity.isEmpty()) {
                 continue;
             }
             userEntities.add(userEntity.get());
@@ -157,7 +160,7 @@ public class MainService {
         try {
             Optional<RentalEntity> rental = rentalRepository.findById(rentalId);
             RentalEntity rentalEntity = null;
-            if(rental.isPresent()){
+            if (rental.isPresent()) {
                 rentalEntity = rental.get();
             }
             CarEntity carEntity = CarEntity.builder()
@@ -167,9 +170,10 @@ public class MainService {
                     .year(year)
                     .price(price)
                     .photo1(photo1.getBytes())
-                    .photo2(photo2.getBytes())
-                    .photo3(photo3.getBytes())
+                    .photo2(photo2 != null ? photo2.getBytes() : null)
+                    .photo3(photo3 != null ? photo3.getBytes() : null)
                     .rentalEntity(rentalEntity)
+                    .available(true)
                     .build();
             carRepository.save(carEntity);
         } catch (IOException e) {
@@ -177,28 +181,40 @@ public class MainService {
         }
     }
 
-    public void modifyCar(Long id, CreateCar createCar){
-       Optional<CarEntity> carEntity = carRepository.findById(id);
-        if(carEntity.isEmpty()){
+    public void modifyCar(Long id, String mark, String model, String color, int year, int price, long rentalId, MultipartFile photo1, MultipartFile photo2, MultipartFile photo3) {
+        Optional<CarEntity> carEntity = carRepository.findById(id);
+        if (carEntity.isEmpty()) {
             throw new ServiceException(500, "Car not found");
         }
-        CarEntity car = carEntity.get();
-        car.setMark(createCar.getMark());
-        car.setModel(createCar.getModel());
-        car.setColor(createCar.getColor());
-        car.setYear(createCar.getYear());
-        car.setPrice(createCar.getPrice());
-        car.setPhoto1(createCar.getPhoto1());
-        car.setPhoto2(createCar.getPhoto2());
-        car.setPhoto3(createCar.getPhoto3());
-        carRepository.save(car);
+        try {
+            CarEntity car = carEntity.get();
+            car.setMark(mark);
+            car.setModel(model);
+            car.setColor(color);
+            car.setYear(year);
+            car.setPrice(price);
+            car.setPhoto1(photo1.getBytes());
+            car.setPhoto2(photo2 != null ? photo2.getBytes() : null);
+            car.setPhoto3(photo3 != null ? photo3.getBytes() : null);
+            carRepository.save(car);
+        } catch (IOException e) {
+            throw new ServiceException(500, "Error when convert photo to byte array");
+        }
     }
 
-    public void deleteCar(Long id){
+    public void deleteCar(Long id) {
         carRepository.deleteById(id);
     }
 
     public List<User> getModeratorsForRental() {
         return userRepository.getModeratorsForRental().stream().map(User::new).toList();
+    }
+
+    public Rental getRental(Long id) {
+        return rentalRepository.findById(id).map(Rental::new).orElse(null);
+    }
+
+    public Car getCar(Long id) {
+        return carRepository.findById(id).map(Car::new).orElse(null);
     }
 }
