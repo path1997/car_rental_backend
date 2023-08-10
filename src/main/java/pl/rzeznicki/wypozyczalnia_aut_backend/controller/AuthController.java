@@ -26,7 +26,7 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser( @RequestBody LoginRequest loginRequest) {
         AuthenticateUser authenticateUser = authService.authenticateUser(loginRequest);
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, authenticateUser.getJwt()).body(authenticateUser.getUserInfoResponse());
+        return ResponseEntity.ok().body(authenticateUser);
     }
 
     @PostMapping("/signup")

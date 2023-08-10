@@ -31,18 +31,21 @@ public class MainController {
     }
 
     @GetMapping("/user/history")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Order>> getUserOrders(){
         return ResponseEntity.ok(mainService.getUserOrders());
     }
 
     @PostMapping("/user/rentcar/{carId}")
+    @PreAuthorize("hasRole('USER')")
     public void rentCar(@PathVariable("carId") Long carId){
         mainService.rentCar(carId);
     }
 
-    @PostMapping("/user/returncar/{orderId}")
-    public void returnCar(@PathVariable("orderId") Long orderId){
-        mainService.returnCar(orderId);
+    @PostMapping("/user/returncar/{orderId}/{rentalId}")
+    @PreAuthorize("hasRole('USER')")
+    public void returnCar(@PathVariable("orderId") Long orderId, @PathVariable("rentalId") Long rentalId){
+        mainService.returnCar(orderId, rentalId);
     }
 
     @GetMapping("/rental/getRentals")
@@ -56,6 +59,7 @@ public class MainController {
     }
 
     @PostMapping("/rental/create")
+    @PreAuthorize("hasRole('MODERATOR')")
     public void createRental(
             @RequestParam(value = "city") String city,
             @RequestParam(value = "address") String address,
@@ -67,16 +71,19 @@ public class MainController {
     }
 
     @DeleteMapping("/rental/delete/{id}")
+    @PreAuthorize("hasRole('MODERATOR')")
     public void deleteRental(@PathVariable("id") Long id){
         mainService.deleteRental(id);
     }
 
     @PostMapping("/rental/modify/{id}")
+    @PreAuthorize("hasRole('MODERATOR')")
     public void modifyRental(@PathVariable("id") Long id, @RequestBody CreateRental createRental){
         mainService.modifyRental(id, createRental);
     }
 
     @PostMapping("/car/create")
+    @PreAuthorize("hasRole('MODERATOR')")
     public void createCar(@RequestParam(value = "mark") String mark,
                           @RequestParam(value = "model") String model,
                           @RequestParam(value = "color") String color,
@@ -90,6 +97,7 @@ public class MainController {
     }
 
     @PostMapping("/car/modify/{id}")
+    @PreAuthorize("hasRole('MODERATOR')")
     public void modifyCar(@PathVariable("id") Long id,
                           @RequestParam(value = "mark") String mark,
                           @RequestParam(value = "model") String model,
@@ -109,30 +117,14 @@ public class MainController {
     }
 
     @DeleteMapping("/car/delete/{id}")
+    @PreAuthorize("hasRole('MODERATOR')")
     public void deleteCar(@PathVariable("id") Long id){
         mainService.deleteCar(id);
     }
 
-/*    @GetMapping("/all")
-    public String allAccess() {
-        return "Public Content.";
+    @GetMapping("/car/get/all")
+    public ResponseEntity<List<Car>> getAllCars(){
+        return ResponseEntity.ok((mainService.getAllCars()));
     }
 
-    @GetMapping("/user")
-    @PreAuthorize("hasRole('USER')")
-    public String userAccess() {
-        return "User Content.";
-    }
-
-    @GetMapping("/mod")
-    @PreAuthorize("hasRole('MODERATOR')")
-    public String moderatorAccess() {
-        return "Moderator Board.";
-    }
-
-    @GetMapping("/admin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String adminAccess() {
-        return "Admin Board.";
-    }*/
 }
